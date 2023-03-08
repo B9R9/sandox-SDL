@@ -23,8 +23,10 @@ int main(void)
         exit(EXIT_FAILURE);
 
     
-    set_background(main_r);
-    
+    // set_background(&main_r);
+    build_background(main_r);
+    // defilement(&main_r);
+    int i = 5;
     /*Boucle event*/
     while (!quit)
     {
@@ -35,7 +37,12 @@ int main(void)
                 quit = true;
             if (e.type == SDL_KEYDOWN)
                 if (e.key.keysym.sym == SDLK_ESCAPE)
-                    quit = true; 
+                    quit = true;
+            test(main_r, &i);
+            i += 5;
+
+            // printf("COMPTEUR %d\n", i++);
+            // defilement(&main_r);
         }
     }
 
