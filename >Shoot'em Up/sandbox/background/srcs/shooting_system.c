@@ -50,6 +50,7 @@ t_projectile *update_position_projectile(t_projectile *list)
     while(list != NULL)
     {
         list->projectile.x += 5;
+        /*ADD safety quand le projectile va hors screen on enleve de la liste*/
         list = list->next;
     }
     return(head);
