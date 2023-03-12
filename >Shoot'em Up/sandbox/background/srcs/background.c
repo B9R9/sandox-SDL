@@ -1,97 +1,79 @@
 #include "test.h"
 
-
-void draw_rect(SDL_Color color, SDL_Rect rect, SDL_Renderer *render)
+// SDL_Texture *load_texture(const char *path, SDL_Renderer *render)
+SDL_Texture *load_texture(const char *path, t_data data)
 {
-    if (SDL_RenderClear(render) != 0)
-		exit (1);
-    SDL_SetRenderDrawColor(render, color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawRect(render, &rect);
-}
+    SDL_Surface *surface;
+    SDL_Texture *texture;
 
-void    build_background(SDL_Renderer *render)
-{
-    SDL_Surface     *background_s;
-    SDL_Texture     *background_t;
-    SDL_Rect        src;
-    SDL_Rect        dst;
-
-    background_s = IMG_Load("/Users/flagada/Desktop/B9R9-SDL/>Shoot'em Up/sandbox/background/img/Space Background.png");
-    if (background_s == NULL)
+    surface = NULL;
+    surface = IMG_Load(path);
+    if (surface == NULL)
     {
-        print_error("In Background", SDL_GetError());
-        SDL_FreeSurface(background_s);
+        print_error("In load_surface", SDL_GetError());
+        SDL_FreeSurface(surface);
+        destroy(data);
+        SDL_Quit();
         exit(EXIT_FAILURE);
     }
-    background_t = SDL_CreateTextureFromSurface(render, background_s);
-    SDL_FreeSurface(background_s);
+    texture =  SDL_CreateTextureFromSurface(data.render, surface);
+    SDL_FreeSurface(surface);
+    if (texture == NULL)
+    {
+        print_error("In load_texture", SDL_GetError());
+        destroy(data);
+        SDL_Quit();
+        exit(EXIT_FAILURE);
+    }
+    return (texture);
+}
 
-    src.x = -1;
-    src.y = 75;
-    src.w = 5;
-    src.h = SCREEN_HEIGHT - src.y - 50;
+int reset_index(int value, SDL_Texture *texture)
+{
+    int max;
+
+    SDL_QueryTexture(texture, NULL, NULL, &max, NULL);
+
+    if (value >= max - 5)
+        return (true);
+    return (false);
+}
+
+// void    build_background(SDL_Renderer *render)
+void    build_background(t_data data)
+{
+    SDL_Texture     *background_t;
+    SDL_Rect        src;
+
+    background_t = load_texture("/Users/flagada/Desktop/B9R9-SDL/>Shoot'em Up/sandbox/background/img/Space Background.png", data);
+   
+    create_rect(&src, -1, 75, 5, SCREEN_HEIGHT - 75 - 50);
     
-    dst.x = -1;
-    dst.y = 75;
-    dst.w = 5;
-    dst.h = SCREEN_HEIGHT - src.y - 50;
-
     while (src.x < SCREEN_WIDTH)
     {
-        SDL_RenderCopy(render, background_t, &src, &dst);     
+        SDL_RenderCopy(data.render, background_t, &src, &src);     
         src.x += 5;
-        dst.x += 5;
     }
 }
 
-void test(SDL_Renderer *render, int *index)
+// void background_animation(SDL_Renderer *render, int *index)
+void background_animation(t_data data, int *index)
 {
-    SDL_Surface     *background_s;
     SDL_Texture     *background_t;
     SDL_Rect        src;
     SDL_Rect        dst;
 
-    background_s = IMG_Load("/Users/flagada/Desktop/B9R9-SDL/>Shoot'em Up/sandbox/background/img/Space Background.png");
-    if (background_s == NULL)
-    {
-        print_error("In Background", SDL_GetError());
-        SDL_FreeSurface(background_s);
-        exit(EXIT_FAILURE);
-    }
-    background_t = SDL_CreateTextureFromSurface(render, background_s);
-    SDL_FreeSurface(background_s);
-
-    int a;
-    int b;
-    SDL_QueryTexture(background_t, NULL, NULL, &a, &b);
-    if (*index >= a - 5)
+    background_t = load_texture("/Users/flagada/Desktop/B9R9-SDL/>Shoot'em Up/sandbox/background/img/Space Background.png", data);
+    if (reset_index(*index, background_t))
         *index = -1;
-    src.x = *index;
-    src.y = 75;
-    src.w = 5;
-    src.h = SCREEN_HEIGHT - src.y - 50;
-    
-    dst.x = -1;
-    dst.y = 75;
-    dst.w = 5;
-    dst.h = SCREEN_HEIGHT - src.y - 50;
-
+    create_rect(&src, *index, 75, 5, SCREEN_HEIGHT - 75 - 50);
+    create_rect(&dst, -1, 75, 5, SCREEN_HEIGHT - 75 - 50);
     while (dst.x < SCREEN_WIDTH)
     {
-        SDL_RenderCopy(render, background_t, &src, &dst);  
+        SDL_RenderCopy(data.render, background_t, &src, &dst);  
         src.x += 5;
-        if (src.x >= a - 5)
+        if (reset_index(src.x,background_t))
             src.x = -1;
         dst.x += 5;
     }
-
 }
-
-
-
-/*
-decoupe le background.
-la partie 1 est sauvegarder
-on copie la partie 2 a la place de la partie 1
-on place la partie 1 quand on arrive au bout de la boucle
-*/
